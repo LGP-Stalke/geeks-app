@@ -21,7 +21,7 @@ jobs:
           IMAGE=stalk3/app-${{ matrix.service }}
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           if [[ "${GITHUB_REF##*/}" == v* ]]; then
-            TAG="${GITHUB_REF##*/}"   # ex: v1.0.0
+            TAG="${GITHUB_REF##*/}"   # ex: v1.0.2
           else
             TAG="1.0.0"
           fi
