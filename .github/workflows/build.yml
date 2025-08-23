@@ -3,7 +3,7 @@ name: Build & Push (API/Web/Worker)
 on:
   push:
     branches: [ "main" ]
-    tags: [ "v*" ]
+    tags:     [ "v*" ]
 
 jobs:
   build-push:
@@ -13,25 +13,31 @@ jobs:
         service: [ "api", "web", "worker" ]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set image meta
+      - name: Compute image name and tag
         id: meta
+        shell: bash
         run: |
-          IMAGE=stalk3/app-${{ matrix.service }}
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
-          if [[ "${GITHUB_REF##*/}" == v* ]]; then
-            TAG="${GITHUB_REF##*/}"   # ex: v1.0.2
+          IMAGE="stalk3/app-${{ matrix.service }}"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" && "${GITHUB_REF_NAME}" == v* ]]; then
+            TAG="${GITHUB_REF_NAME}"                # ex: v1.0.2
           else
-            TAG="1.0.0"
+            TAG="${GITHUB_SHA::7}"                  # ex: a1b2c3d (short SHA)
           fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "image=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}"     >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # (facultatif) cache buildx pour accélérer les builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build & Push
         uses: docker/build-push-action@v6
@@ -41,3 +47,8 @@ jobs:
           tags: |
             ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
             ${{ steps.meta.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+          # build args pour le front si besoin (ignorés par api/worker)
+          build-args: |
+            VITE_API_URL=http://api:3000
