@@ -1,10 +1,8 @@
 FROM alpine:3.20 AS build
 WORKDIR /out
-# page de test (tu remplaceras par ton front plus tard)
-RUN printf '<!doctype html><html><head><meta charset="utf-8"><title>Geeks App</title></head><body><h1>Geeks App Web</h1><pre id="out">Loading...</pre><script>fetch("/api/health").then(r=>r.json()).then(j=>document.getElementById("out").textContent=JSON.stringify(j)).catch(e=>document.getElementById("out").textContent=String(e));</script></body></html>' > /out/index.html
+RUN printf '<!doctype html><html><head><meta charset="utf-8"><title>Geeks App</title><style>body{font-family:system-ui;margin:20px}input,button{padding:6px;margin:4px}</style></head><body><h1>Geeks App</h1><div id="auth"><input id="email" placeholder="email" value="admin@geeksdupc.fr"><input id="pwd" type="password" placeholder="password" value="admin123"><button onclick="login()">Se connecter</button></div><pre id="out"></pre><script>async function login(){const email=document.getElementById(\"email\").value;const password=document.getElementById(\"pwd\").value;const r=await fetch(\"/api/login\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify({email,password})});const j=await r.json();if(j.token){localStorage.setItem(\"t\",j.token);document.getElementById(\"auth\").innerHTML=`Connecté: ${j.user.email} <button onclick=\"load()\">Charger clients</button>`;}else{document.getElementById(\"out\").textContent=JSON.stringify(j,null,2)}}async function load(){const t=localStorage.getItem(\"t\");const r=await fetch(\"/api/clients\",{headers:{Authorization:\"Bearer \"+t}});const j=await r.json();document.getElementById(\"out\").textContent=JSON.stringify(j,null,2);}fetch(\"/api/health\").then(r=>r.json()).then(j=>document.getElementById(\"out\").textContent=JSON.stringify(j)).catch(()=>{});</script></body></html>' > /out/index.html
 
 FROM nginx:1.27-alpine
-# Nginx sur 8080 + proxy /api vers le service docker "api" (port 3000)
 RUN printf "server {\n  listen 8080;\n  server_name _;\n  root /usr/share/nginx/html;\n  index index.html;\n  location /api/ {\n    proxy_set_header Host \$host;\n    proxy_set_header X-Real-IP \$remote_addr;\n    proxy_pass http://api:3000/;\n  }\n}\n" > /etc/nginx/conf.d/default.conf
 COPY --from=build /out /usr/share/nginx/html
 EXPOSE 8080
