@@ -5,26 +5,23 @@ on:
     branches: [ "main" ]
     tags: [ "v*" ]
 
-env:
-  REGISTRY: docker.io
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-
 jobs:
   build-push:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [ "api", "web", "worker" ]
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Set image meta
         id: meta
         run: |
-          IMAGE=${{ env.DOCKERHUB_USERNAME }}/app-${{ matrix.service }}
+          IMAGE=stalk3/app-${{ matrix.service }}
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           if [[ "${GITHUB_REF##*/}" == v* ]]; then
-            TAG="${GITHUB_REF##*/}"   # exemple v1.0.0
+            TAG="${GITHUB_REF##*/}"   # ex: v1.0.0
           else
             TAG="1.0.0"
           fi
