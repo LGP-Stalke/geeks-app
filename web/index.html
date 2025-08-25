@@ -192,6 +192,7 @@ function onLogin(){
 
 // =================== CLIENTS ===================
 async function loadClients(){
+  if (!requireAuth()) return;             // <--- garde
   try{
     const r = await fetch('/api/clients', {
       headers: { Authorization: 'Bearer '+state.token }
@@ -199,10 +200,72 @@ async function loadClients(){
     const data = await r.json();
     state.clients = Array.isArray(data) ? data : [];
     renderClients();
-  }catch(e){
-    console.error(e);
-  }
+  }catch(e){ console.error(e); }
 }
+
+function openAdd(){
+  if (!requireAuth()) return;             // <--- garde
+  state.editingId = null;
+  el('#modalTitle').textContent='Nouveau client';
+  el('#f_name').value=''; el('#f_email').value='';
+  el('#f_phone').value=''; el('#f_address').value='';
+  el('#f_zip').value='';  el('#f_city').value='';
+  show(el('#modal'));
+}
+
+function openEdit(id){
+  if (!requireAuth()) return;             // <--- garde
+  const c = state.clients.find(x=>x.id===id);
+  if(!c) return;
+  state.editingId = id;
+  el('#modalTitle').textContent='Modifier client';
+  el('#f_name').value=c.name||'';
+  el('#f_email').value=c.email||'';
+  el('#f_phone').value=c.phone||'';
+  el('#f_address').value=c.address||'';
+  el('#f_zip').value=c.zip||'';
+  el('#f_city').value=c.city||'';
+  show(el('#modal'));
+}
+
+async function saveClient(){
+  if (!requireAuth()) return;             // <--- garde
+  const payload = {
+    name: el('#f_name').value.trim(),
+    email: el('#f_email').value.trim() || null,
+    phone: el('#f_phone').value.trim() || null,
+    address: el('#f_address').value.trim() || null,
+    zip: el('#f_zip').value.trim() || null,
+    city: el('#f_city').value.trim() || null
+  };
+  if(!payload.name){ alert('Nom obligatoire'); return; }
+
+  const isEdit = !!state.editingId;
+  const url = isEdit ? `/api/clients/${state.editingId}` : `/api/clients`;
+  const method = isEdit ? 'PUT' : 'POST';
+
+  const r = await fetch(url, {
+    method,
+    headers:{ 'Content-Type':'application/json', Authorization:'Bearer '+state.token },
+    body: JSON.stringify(payload)
+  });
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+
+  hide(el('#modal'));
+  await loadClients();
+}
+
+async function delClient(id){
+  if (!requireAuth()) return;             // <--- garde
+  if(!confirm('Supprimer ce client ?')) return;
+  const r = await fetch(`/api/clients/${id}`, {
+    method:'DELETE',
+    headers:{ Authorization:'Bearer '+state.token }
+  });
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+  await loadClients();
+}
+
 
 function renderClients(){
   const q = el('#search').value.trim().toLowerCase();
@@ -232,77 +295,15 @@ function renderClients(){
   if(filtered.length===0) { show(el('#clientsEmpty')); } else { hide(el('#clientsEmpty')); }
 }
 
-function openAdd(){
-  state.editingId = null;
-  el('#modalTitle').textContent='Nouveau client';
-  el('#f_name').value='';
-  el('#f_email').value='';
-  el('#f_phone').value='';
-  el('#f_address').value='';
-  el('#f_zip').value='';
-  el('#f_city').value='';
-  show(el('#modal'));
-}
-
-function openEdit(id){
-  const c = state.clients.find(x=>x.id===id);
-  if(!c) return;
-  state.editingId = id;
-  el('#modalTitle').textContent='Modifier client';
-  el('#f_name').value=c.name||'';
-  el('#f_email').value=c.email||'';
-  el('#f_phone').value=c.phone||'';
-  el('#f_address').value=c.address||'';
-  el('#f_zip').value=c.zip||'';
-  el('#f_city').value=c.city||'';
-  show(el('#modal'));
-}
-
-async function saveClient(){
-  const payload = {
-    name: el('#f_name').value.trim(),
-    email: el('#f_email').value.trim() || null,
-    phone: el('#f_phone').value.trim() || null,
-    address: el('#f_address').value.trim() || null,
-    zip: el('#f_zip').value.trim() || null,
-    city: el('#f_city').value.trim() || null
-  };
-  if(!payload.name){ alert('Nom obligatoire'); return; }
-
-  const isEdit = !!state.editingId;
-  const url = isEdit ? `/api/clients/${state.editingId}` : `/api/clients`;
-  const method = isEdit ? 'PUT' : 'POST';
-
-  const r = await fetch(url, {
-    method,
-    headers:{
-      'Content-Type':'application/json',
-      Authorization:'Bearer '+state.token
-    },
-    body: JSON.stringify(payload)
-  });
-  if(!r.ok){
-    const txt = await r.text();
-    alert('Erreur API: '+txt);
-    return;
+  function requireAuth() {
+  if (!state.token || !state.user) {
+    alert('Session expirée ou non connectée. Merci de vous reconnecter.');
+    logout();           // vide token + repasse sur la vue login
+    return false;
   }
-  hide(el('#modal'));
-  await loadClients();
+  return true;
 }
 
-async function delClient(id){
-  if(!confirm('Supprimer ce client ?')) return;
-  const r = await fetch(`/api/clients/${id}`, {
-    method:'DELETE',
-    headers:{ Authorization:'Bearer '+state.token }
-  });
-  if(!r.ok){
-    const t = await r.text();
-    alert('Erreur API: '+t);
-    return;
-  }
-  await loadClients();
-}
 
 // =================== EVENTS ===================
 el('#btnLogin').addEventListener('click', login);
@@ -319,6 +320,8 @@ els('#nav button').forEach(b=>{
     if(b.dataset.view==='clients') loadClients();
   });
 });
+
+  
 
 // Auto-login si token déjà présent
 if(state.token && state.user){
