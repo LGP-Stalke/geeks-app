@@ -1,68 +1,331 @@
 <!doctype html>
-<html>
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <title>Geeks App</title>
-  <style>
-    body { font-family: system-ui; margin: 20px; }
-    input, button { padding: 6px; margin: 4px; }
-  </style>
+<meta charset="utf-8" />
+<title>Geeks App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { --bg:#0b1220; --card:#121a2a; --muted:#b6c2d9; --fg:#e8eefc; --accent:#4f8cff; --ok:#1fbf75; --danger:#e25d5d; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, Arial, sans-serif; color:var(--fg); background:linear-gradient(180deg,#0b1220,#0b1324); min-height:100vh; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#0e172b; position:sticky; top:0; z-index:2; border-bottom:1px solid #1f2b46; }
+  header h1 { margin:0; font-size:18px; letter-spacing:.3px; color:#fff; }
+  header nav button { margin-left:8px; background:transparent; color:var(--muted); border:1px solid #1f2b46; padding:8px 12px; border-radius:10px; cursor:pointer; }
+  header nav button.active { color:#fff; border-color:var(--accent); background:rgba(79,140,255,.12); }
+  header .user { font-size:13px; color:var(--muted); }
+  header .user button { margin-left:8px; padding:6px 10px; border-radius:8px; border:1px solid #2a3b63; color:#fff; background:#1a2746; cursor:pointer; }
+
+  main { max-width:1100px; margin:20px auto; padding:0 16px; }
+  .card { background:var(--card); border:1px solid #1f2b46; border-radius:14px; padding:16px; margin-bottom:16px; box-shadow: 0 2px 12px rgba(0,0,0,.25); }
+
+  .login { max-width:420px; margin:80px auto; text-align:center; }
+  .login h2 { margin:0 0 14px; font-weight:600; }
+  .row { display:flex; gap:10px; }
+  input, select, textarea { width:100%; padding:10px 12px; border-radius:10px; border:1px solid #2b3a61; background:#0f1730; color:#e9f1ff; }
+  input::placeholder { color:#8fa1c7; }
+  button.primary { background:var(--accent); border:none; color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer; }
+  button.ghost { background:transparent; color:var(--muted); border:1px solid #2a3b63; padding:10px 14px; border-radius:10px; cursor:pointer; }
+  .actions { display:flex; gap:8px; }
+  .toolbar { display:flex; gap:10px; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .toolbar .left, .toolbar .right { display:flex; gap:8px; align-items:center; }
+
+  table { width:100%; border-collapse:collapse; }
+  th, td { border-bottom:1px solid #1f2b46; padding:10px 8px; text-align:left; font-size:14px; }
+  th { color:#a9bce4; font-weight:600; }
+  tr:hover td { background:#0f1a2f; }
+
+  .muted { color:var(--muted); }
+  .ok { color:var(--ok); }
+  .danger { color:var(--danger); }
+  .hidden { display:none; }
+
+  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; z-index:10; }
+  .modal { width:560px; background:var(--card); border:1px solid #1f2b46; border-radius:14px; padding:16px; }
+  .modal h3 { margin:0 0 10px; }
+</style>
 </head>
 <body>
+
+<header>
   <h1>Geeks App</h1>
-  <div id="auth">
-    <input id="email" placeholder="email" value="admin@geeksdupc.fr">
-    <input id="pwd" type="password" placeholder="password" value="admin123">
-    <button onclick="login()">Se connecter</button>
+  <nav id="nav" class="hidden">
+    <button data-view="clients" class="active">Clients</button>
+    <button data-view="interventions" disabled>Interventions</button>
+    <button data-view="planning" disabled>Planning</button>
+    <button data-view="stock" disabled>Stock</button>
+    <button data-view="stats" disabled>Stats</button>
+  </nav>
+  <div class="user" id="userBox" class="hidden"></div>
+</header>
+
+<main>
+
+  <!-- LOGIN -->
+  <section id="view-login" class="login card">
+    <h2>Connexion</h2>
+    <div class="row">
+      <input id="email" placeholder="email" value="admin@geeksdupc.fr" />
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <input id="password" type="password" placeholder="mot de passe" value="admin123" />
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="primary" id="btnLogin">Se connecter</button>
+    </div>
+    <p id="loginMsg" class="muted"></p>
+  </section>
+
+  <!-- CLIENTS -->
+  <section id="view-clients" class="card hidden">
+    <div class="toolbar">
+      <div class="left">
+        <strong>Clients</strong>
+        <span id="clientsCount" class="muted"></span>
+      </div>
+      <div class="right">
+        <input id="search" placeholder="Rechercher (nom, email, ville…)" />
+        <button class="primary" id="btnAddClient">Ajouter</button>
+        <button class="ghost" id="btnReload">Rafraîchir</button>
+      </div>
+    </div>
+    <div class="tableWrap">
+      <table id="clientsTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Adresse</th><th>CP</th><th>Ville</th><th style="width:140px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="clientsEmpty" class="muted hidden">Aucun client.</p>
+  </section>
+
+</main>
+
+<!-- MODAL CLIENT -->
+<div id="modal" class="modal-backdrop hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Nouveau client</h3>
+    <div class="row"><input id="f_name" placeholder="Nom *"></div>
+    <div class="row" style="margin-top:8px;"><input id="f_email" placeholder="Email"></div>
+    <div class="row" style="margin-top:8px;"><input id="f_phone" placeholder="Téléphone"></div>
+    <div class="row" style="margin-top:8px;"><input id="f_address" placeholder="Adresse"></div>
+    <div class="row" style="margin-top:8px; gap:8px;">
+      <input id="f_zip" placeholder="CP" style="max-width:160px;">
+      <input id="f_city" placeholder="Ville">
+    </div>
+    <div class="actions" style="margin-top:12px;">
+      <button class="primary" id="btnSaveClient">Enregistrer</button>
+      <button class="ghost" id="btnCancel">Annuler</button>
+    </div>
   </div>
-  <pre id="out">...</pre>
+</div>
 
-  <script>
-    const out = (x) => {
-      document.getElementById('out').textContent =
-        (typeof x === 'string' ? x : JSON.stringify(x, null, 2));
-    };
+<script>
+const state = {
+  token: localStorage.getItem('token') || null,
+  user:  JSON.parse(localStorage.getItem('user') || 'null'),
+  clients: [],
+  editingId: null
+};
 
-    // ✅ Corrigé : rendu global
-    window.login = async function () {
-      try {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('pwd').value;
+const el = s => document.querySelector(s);
+const els = s => document.querySelectorAll(s);
+const show = e => e.classList.remove('hidden');
+const hide = e => e.classList.add('hidden');
 
-        const r = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
+function setActiveView(name){
+  // header nav
+  els('#nav button').forEach(b => b.classList.toggle('active', b.dataset.view===name));
+  // views
+  hide(el('#view-login'));
+  hide(el('#view-clients'));
+  if(name==='clients') show(el('#view-clients'));
+  if(name==='login') show(el('#view-login'));
+}
 
-        const j = await r.json();
-        out(j);
+// =================== AUTH ===================
+async function login(){
+  const email = el('#email').value.trim();
+  const password = el('#password').value;
+  el('#loginMsg').textContent = 'Connexion…';
+  try{
+    const r = await fetch('/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const j = await r.json();
+    if(!r.ok || !j.token){
+      el('#loginMsg').textContent = (j && j.error) ? j.error : 'Échec de connexion';
+      return;
+    }
+    state.token = j.token;
+    state.user  = j.user;
+    localStorage.setItem('token', j.token);
+    localStorage.setItem('user', JSON.stringify(j.user));
+    onLogin();
+  }catch(e){
+    el('#loginMsg').textContent = 'Erreur: '+e.message;
+  }
+}
 
-        if (j.token) {
-          localStorage.setItem('t', j.token);
-          document.getElementById('auth').innerHTML =
-            `Connecté: ${j.user.email} <button onclick="loadClients()">Charger clients</button>`;
-        }
-      } catch (e) {
-        out('Erreur login: ' + e);
-      }
-    };
+function logout(){
+  state.token = null;
+  state.user = null;
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  hide(el('#nav'));
+  el('#userBox').innerHTML = '';
+  setActiveView('login');
+}
 
-    // ✅ rendu global aussi
-    window.loadClients = async function () {
-      try {
-        const t = localStorage.getItem('t');
-        const r = await fetch('/api/clients', {
-          headers: { Authorization: 'Bearer ' + t }
-        });
-        out(await r.json());
-      } catch (e) {
-        out('Erreur clients: ' + e);
-      }
-    };
+// =================== HEADER ===================
+function onLogin(){
+  // header
+  el('#userBox').innerHTML = `Connecté: ${state.user.email} <button onclick="logout()">Déconnexion</button>`;
+  show(el('#nav'));
+  setActiveView('clients');
+  loadClients();
+}
 
-    // Vérifie l’API dès l’ouverture
-    fetch('/api/health').then(r => r.json()).then(out).catch(e => out('Health KO: ' + e));
-  </script>
+// =================== CLIENTS ===================
+async function loadClients(){
+  try{
+    const r = await fetch('/api/clients', {
+      headers: { Authorization: 'Bearer '+state.token }
+    });
+    const data = await r.json();
+    state.clients = Array.isArray(data) ? data : [];
+    renderClients();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+function renderClients(){
+  const q = el('#search').value.trim().toLowerCase();
+  const rows = el('#clientsTable tbody');
+  rows.innerHTML='';
+  const filtered = state.clients.filter(c=>{
+    const text = `${c.name||''} ${c.email||''} ${c.city||''}`.toLowerCase();
+    return text.includes(q);
+  });
+  filtered.forEach(c=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>${c.name||''}</td>
+      <td>${c.email||''}</td>
+      <td>${c.phone||''}</td>
+      <td>${c.address||''}</td>
+      <td>${c.zip||''}</td>
+      <td>${c.city||''}</td>
+      <td class="actions">
+        <button class="ghost" onclick="openEdit(${c.id})">Éditer</button>
+        <button class="ghost danger" onclick="delClient(${c.id})">Supprimer</button>
+      </td>`;
+    rows.appendChild(tr);
+  });
+  el('#clientsCount').textContent = `(${filtered.length})`;
+  if(filtered.length===0) { show(el('#clientsEmpty')); } else { hide(el('#clientsEmpty')); }
+}
+
+function openAdd(){
+  state.editingId = null;
+  el('#modalTitle').textContent='Nouveau client';
+  el('#f_name').value='';
+  el('#f_email').value='';
+  el('#f_phone').value='';
+  el('#f_address').value='';
+  el('#f_zip').value='';
+  el('#f_city').value='';
+  show(el('#modal'));
+}
+
+function openEdit(id){
+  const c = state.clients.find(x=>x.id===id);
+  if(!c) return;
+  state.editingId = id;
+  el('#modalTitle').textContent='Modifier client';
+  el('#f_name').value=c.name||'';
+  el('#f_email').value=c.email||'';
+  el('#f_phone').value=c.phone||'';
+  el('#f_address').value=c.address||'';
+  el('#f_zip').value=c.zip||'';
+  el('#f_city').value=c.city||'';
+  show(el('#modal'));
+}
+
+async function saveClient(){
+  const payload = {
+    name: el('#f_name').value.trim(),
+    email: el('#f_email').value.trim() || null,
+    phone: el('#f_phone').value.trim() || null,
+    address: el('#f_address').value.trim() || null,
+    zip: el('#f_zip').value.trim() || null,
+    city: el('#f_city').value.trim() || null
+  };
+  if(!payload.name){ alert('Nom obligatoire'); return; }
+
+  const isEdit = !!state.editingId;
+  const url = isEdit ? `/api/clients/${state.editingId}` : `/api/clients`;
+  const method = isEdit ? 'PUT' : 'POST';
+
+  const r = await fetch(url, {
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      Authorization:'Bearer '+state.token
+    },
+    body: JSON.stringify(payload)
+  });
+  if(!r.ok){
+    const txt = await r.text();
+    alert('Erreur API: '+txt);
+    return;
+  }
+  hide(el('#modal'));
+  await loadClients();
+}
+
+async function delClient(id){
+  if(!confirm('Supprimer ce client ?')) return;
+  const r = await fetch(`/api/clients/${id}`, {
+    method:'DELETE',
+    headers:{ Authorization:'Bearer '+state.token }
+  });
+  if(!r.ok){
+    const t = await r.text();
+    alert('Erreur API: '+t);
+    return;
+  }
+  await loadClients();
+}
+
+// =================== EVENTS ===================
+el('#btnLogin').addEventListener('click', login);
+el('#btnAddClient').addEventListener('click', openAdd);
+el('#btnReload').addEventListener('click', loadClients);
+el('#btnSaveClient').addEventListener('click', saveClient);
+el('#btnCancel').addEventListener('click', ()=>hide(el('#modal')));
+el('#search').addEventListener('input', renderClients);
+
+els('#nav button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    if(b.disabled) return;
+    setActiveView(b.dataset.view);
+    if(b.dataset.view==='clients') loadClients();
+  });
+});
+
+// Auto-login si token déjà présent
+if(state.token && state.user){
+  onLogin();
+} else {
+  setActiveView('login');
+}
+</script>
 </body>
 </html>
