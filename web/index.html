@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Geeks App</title>
+  <style>
+    body { font-family: system-ui; margin: 20px; }
+    input, button { padding: 6px; margin: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Geeks App</h1>
+  <div id="auth">
+    <input id="email" placeholder="email" value="admin@geeksdupc.fr">
+    <input id="pwd" type="password" placeholder="password" value="admin123">
+    <button onclick="login()">Se connecter</button>
+  </div>
+  <pre id="out">...</pre>
+
+  <script>
+    const out = (x) => {
+      document.getElementById('out').textContent =
+        (typeof x === 'string' ? x : JSON.stringify(x, null, 2));
+    };
+
+    // ✅ Corrigé : rendu global
+    window.login = async function () {
+      try {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pwd').value;
+
+        const r = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const j = await r.json();
+        out(j);
+
+        if (j.token) {
+          localStorage.setItem('t', j.token);
+          document.getElementById('auth').innerHTML =
+            `Connecté: ${j.user.email} <button onclick="loadClients()">Charger clients</button>`;
+        }
+      } catch (e) {
+        out('Erreur login: ' + e);
+      }
+    };
+
+    // ✅ rendu global aussi
+    window.loadClients = async function () {
+      try {
+        const t = localStorage.getItem('t');
+        const r = await fetch('/api/clients', {
+          headers: { Authorization: 'Bearer ' + t }
+        });
+        out(await r.json());
+      } catch (e) {
+        out('Erreur clients: ' + e);
+      }
+    };
+
+    // Vérifie l’API dès l’ouverture
+    fetch('/api/health').then(r => r.json()).then(out).catch(e => out('Health KO: ' + e));
+  </script>
+</body>
+</html>
