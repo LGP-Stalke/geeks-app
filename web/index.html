@@ -1,336 +1,415 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Geeks App</title>
-  <style>
-    :root { --bg:#0f172a; --card:#111827; --muted:#64748b; --text:#e5e7eb; --accent:#60a5fa; --danger:#ef4444; --ok:#22c55e; }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;gap:16px}
-    header h1{font-size:20px;margin:0}
-    nav{margin-left:auto;display:flex;gap:8px}
-    button, .btn{appearance:none;border:1px solid #1f2937;background:#1f2937;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer}
-    button:hover{border-color:#334155}
-    .btn-primary{background:var(--accent);border-color:var(--accent);color:#0b1220}
-    .btn-danger{background:var(--danger);border-color:var(--danger)}
-    .btn-ghost{background:transparent;border-color:#334155}
-    .hidden{display:none!important}
-    .card{background:var(--card);border:1px solid #1f2937;border-radius:14px;padding:20px}
-    .center {display:grid;place-items:center;height:calc(100svh - 64px)}
-    .form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-    input{width:100%;padding:12px 14px;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--text)}
-    label{color:var(--muted);font-size:13px}
-    .grid{display:grid;gap:12px}
-    .grid-2{grid-template-columns:1fr 1fr}
-    .grid-3{grid-template-columns:1fr 1fr 1fr}
-    .list{display:grid;gap:8px;margin-top:12px}
-    .row{display:grid;grid-template-columns:180px 220px 130px 1fr 120px 140px auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220}
-    .row.header{background:#0b1220B3;border-color:#1f29374d;color:var(--muted);font-weight:600}
-    .pill{padding:2px 8px;border-radius:999px;border:1px solid #1f2937;background:#0b1220;color:var(--muted);font-size:12px}
-    .muted{color:var(--muted)}
-    /* modal */
-    .modal-backdrop{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:50}
-    .modal{width:min(680px,92vw)}
-    .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
-    .topbar{display:flex;align-items:center;gap:12px;margin:12px 0}
-    .grow{flex:1}
-    .code{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#0b1220;border:1px solid #1f2937;padding:10px;border-radius:10px}
-    @media (max-width:980px){ .row{grid-template-columns:160px 1fr 120px;grid-auto-rows:auto} .row .hide-sm{display:none} }
-  </style>
-  <script>
-    // Base API : priorité à window.API_URL (injectée par l'image web), sinon /api
-    const BASE = (window.API_URL && window.API_URL.trim()) || '/api';
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Geeks App</title>
+<style>
+:root{--bg:#0f172a;--card:#111827;--muted:#64748b;--text:#e5e7eb;--accent:#60a5fa;--danger:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto}
+.wrap{max-width:1100px;margin:0 auto;padding:24px}
+header{display:flex;gap:12px;align-items:center}h1{margin:0;font-size:20px}
+.navbar{margin-left:auto;display:flex;gap:8px;align-items:center}
+button{appearance:none;cursor:pointer;border:1px solid #1f2937;background:#1f2937;color:var(--text);padding:10px 14px;border-radius:10px}
+button:hover{border-color:#334155}.btn-primary{background:var(--accent);border-color:var(--accent);color:#0b1220}
+.btn-danger{background:var(--danger);border-color:var(--danger)}.btn-ghost{background:transparent;border-color:#334155}
+.hidden{display:none!important}.muted{color:var(--muted)}.pill{border:1px solid #1f2937;border-radius:999px;padding:2px 8px;color:var(--muted)}
+.card{background:var(--card);border:1px solid #1f2937;border-radius:14px;padding:20px}
+.center{display:grid;place-items:center;height:calc(100svh - 64px)}
+.form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220;color:var(--text)}
+label{color:var(--muted);font-size:13px}
+.topbar{display:flex;gap:10px;align-items:center;margin:12px 0}.grow{flex:1}
+.tabs{display:flex;gap:8px;margin-left:12px}
+.tab{border-color:#334155}.tab.active{background:#0b1220;border-color:#475569}
+.list{display:grid;gap:8px}.row{display:grid;grid-template-columns:180px 220px 130px 1fr 120px 180px auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid #1f2937;border-radius:10px;background:#0b1220}
+.row.header{background:#0b1220B3;border-color:#1f29374d;color:var(--muted);font-weight:600}
+.code{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#0b1220;border:1px solid #1f2937;padding:10px;border-radius:10px}
+.modal-backdrop{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:50}
+.modal{width:min(720px,94vw)}canvas{background:#fff;border-radius:8px}
+@media(max-width:980px){.row{grid-template-columns:160px 1fr 120px auto}.hide-sm{display:none}}
+</style>
+<script>
+// ====== CONFIG API ======
+const BASE = (window.API_URL && window.API_URL.trim()) || '/api';
 
-    // ---- Helpers DOM
-    const el = (q) => document.querySelector(q);
-    const show = (n) => n && n.classList.remove('hidden');
-    const hide = (n) => n && n.classList.add('hidden');
+// ====== HELPERS DOM ======
+const el = q => document.querySelector(q);
+const show = n => n && n.classList.remove('hidden');
+const hide = n => n && n.classList.add('hidden');
+const valOrNull = sel => { const v = el(sel).value.trim(); return v? v:null; }
+const esc = s => String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m]));
 
-    // ---- État global
-    const state = { token:null, user:null, clients:[], editingId:null };
+// ====== STATE ======
+const state = {
+  token:null, user:null,
+  clients:[], editingClientId:null,
+  interventions:[], editingIntervId:null,
+  sign:{ id:null, pad:null, drawing:false }
+};
 
-    // ---- Garde d'auth
-    function requireAuth(){
-      if(!state.token || !state.user){
-        alert('Session expirée ou non connectée. Merci de vous reconnecter.');
-        logout();
-        return false;
-      }
-      return true;
-    }
+// ====== AUTH & NAV ======
+function requireAuth(){ if(!state.token||!state.user){ alert('Session expirée. Reconnecte-toi.'); logout(); return false;} return true; }
+function setView(name){ ['login','clients','interventions'].forEach(v=>el('#view-'+v)?.classList.add('hidden')); el('#view-'+name)?.classList.remove('hidden'); }
+function showLogin(){ setView('login'); }
 
-    // ---- Vues
-    function setActiveView(name){
-      ['login','clients'].forEach(v => el('#view-'+v)?.classList.add('hidden'));
-      el('#view-'+name)?.classList.remove('hidden');
-    }
-    function showLogin(){ setActiveView('login'); }
+function onLogin(){
+  el('#who').innerHTML = `Connecté: <span class="pill">${state.user.email}</span>`;
+  show(el('#navbar'));
+  setTab('clients'); // ouvre l’onglet clients par défaut
+}
 
-    function onLogin(){
-      el('#who').innerHTML = `Connecté: <span class="pill">${state.user.email}</span>`;
-      show(el('#nav'));
-      setActiveView('clients');
-      loadClients();
-    }
-    function logout(){
-      state.token = null; state.user = null; state.clients = []; state.editingId = null;
-      localStorage.removeItem('token'); localStorage.removeItem('user');
-      hide(el('#nav')); el('#who').textContent = '';
-      el('#login_email').value=''; el('#login_pass').value='';
-      setActiveView('login');
-      // Fermer modale si restée ouverte
-      hide(el('#modalBackdrop'));
-    }
+function logout(){
+  state.token=null; state.user=null;
+  localStorage.removeItem('token'); localStorage.removeItem('user');
+  hide(el('#navbar')); el('#who').textContent='';
+  el('#login_email').value=''; el('#login_pass').value='';
+  setView('login'); hide(el('#modalClient')); hide(el('#modalInterv')); hide(el('#modalSign'));
+}
 
-    // ---- Auth
-    async function login(ev){
-      ev?.preventDefault();
-      const email = el('#login_email').value.trim();
-      const password = el('#login_pass').value;
-      if(!email || !password){ alert('Email et mot de passe requis'); return; }
-      try{
-        const r = await fetch(`${BASE}/login`, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ email, password })
-        });
-        const data = await r.json();
-        if(!r.ok){ el('#login_result').textContent = JSON.stringify(data,null,2); return; }
-        state.token = data.token;
-        state.user  = data.user;
-        localStorage.setItem('token', state.token);
-        localStorage.setItem('user', JSON.stringify(state.user));
-        el('#login_result').textContent = '';
-        onLogin();
-      }catch(e){
-        el('#login_result').textContent = e.message;
-        console.error(e);
-      }
-    }
+async function login(ev){
+  ev?.preventDefault();
+  const email = el('#login_email').value.trim();
+  const password = el('#login_pass').value;
+  if(!email||!password){ alert('Email et mot de passe requis.'); return; }
+  const r = await fetch(`${BASE}/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
+  const data = await r.json();
+  if(!r.ok){ el('#login_result').textContent = JSON.stringify(data,null,2); return; }
+  state.token=data.token; state.user=data.user;
+  localStorage.setItem('token',state.token); localStorage.setItem('user',JSON.stringify(state.user));
+  el('#login_result').textContent=''; onLogin();
+}
 
-    // ---- Clients
-    async function loadClients(){
-      if(!requireAuth()) return;
-      try{
-        const r = await fetch(`${BASE}/clients`, {
-          headers:{ Authorization:'Bearer '+state.token }
-        });
-        const data = await r.json();
-        state.clients = Array.isArray(data)? data : [];
-        renderClients();
-      }catch(e){
-        console.error(e);
-        el('#clients_list').innerHTML = `<div class="code">Erreur: ${e.message}</div>`;
-      }
-    }
+// ====== TABS ======
+async function setTab(tab){
+  el('#tabClients').classList.toggle('active', tab==='clients');
+  el('#tabInterv').classList.toggle('active', tab==='interventions');
+  if(tab==='clients'){ setView('clients'); await loadClients(); }
+  else{ setView('interventions'); await loadInterventions(); }
+}
 
-    function renderClients(){
-      const list = el('#clients_list');
-      if(!state.clients.length){
-        list.innerHTML = `<div class="code muted">Aucun client pour le moment.</div>`;
-        return;
-      }
-      let html = `
-        <div class="row header">
-          <div>Nom</div>
-          <div>Email</div>
-          <div class="hide-sm">Téléphone</div>
-          <div class="hide-sm">Adresse</div>
-          <div class="hide-sm">CP</div>
-          <div class="hide-sm">Ville</div>
-          <div>Actions</div>
-        </div>
-      `;
-      for(const c of state.clients){
-        html += `
-          <div class="row">
-            <div>${escapeHtml(c.name||'')}</div>
-            <div>${escapeHtml(c.email||'')}</div>
-            <div class="hide-sm">${escapeHtml(c.phone||'')}</div>
-            <div class="hide-sm">${escapeHtml(c.address||'')}</div>
-            <div class="hide-sm">${escapeHtml(c.zip||'')}</div>
-            <div class="hide-sm">${escapeHtml(c.city||'')}</div>
-            <div style="display:flex;gap:6px">
-              <button class="btn-ghost" onclick="openEdit(${c.id})">Éditer</button>
-              <button class="btn-danger" onclick="delClient(${c.id})">Supprimer</button>
-            </div>
-          </div>
-        `;
-      }
-      list.innerHTML = html;
-    }
+// ====== CLIENTS ======
+async function loadClients(){
+  if(!requireAuth())return;
+  const r = await fetch(`${BASE}/clients`, { headers:{Authorization:'Bearer '+state.token}});
+  state.clients = (await r.json())||[];
+  renderClients();
+}
+function renderClients(){
+  const list = el('#clients_list');
+  if(!state.clients.length){ list.innerHTML=`<div class="code muted">Aucun client.</div>`; return; }
+  let html=`
+  <div class="row header">
+    <div>Nom</div><div>Email</div><div class="hide-sm">Téléphone</div><div class="hide-sm">Adresse</div><div class="hide-sm">CP</div><div class="hide-sm">Ville</div><div>Actions</div>
+  </div>`;
+  for(const c of state.clients){
+    html+=`<div class="row" data-id="${c.id}">
+      <div>${esc(c.name)}</div><div>${esc(c.email)}</div>
+      <div class="hide-sm">${esc(c.phone)}</div><div class="hide-sm">${esc(c.address)}</div>
+      <div class="hide-sm">${esc(c.zip)}</div><div class="hide-sm">${esc(c.city)}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-ghost js-edit" data-id="${c.id}">Éditer</button>
+        <button class="btn-danger js-del" data-id="${c.id}">Supprimer</button>
+      </div>
+    </div>`;
+  }
+  list.innerHTML=html;
+}
 
-    // ---- Modale
-    function openAdd(){
-      if(!requireAuth()) return;
-      state.editingId = null;
-      el('#modalTitle').textContent = 'Nouveau client';
-      el('#f_name').value=''; el('#f_email').value='';
-      el('#f_phone').value=''; el('#f_address').value='';
-      el('#f_zip').value=''; el('#f_city').value='';
-      show(el('#modalBackdrop'));
-    }
-    function openEdit(id){
-      if(!requireAuth()) return;
-      const c = state.clients.find(x=>x.id===id);
-      if(!c) return;
-      state.editingId = id;
-      el('#modalTitle').textContent = 'Modifier client';
-      el('#f_name').value=c.name||'';
-      el('#f_email').value=c.email||'';
-      el('#f_phone').value=c.phone||'';
-      el('#f_address').value=c.address||'';
-      el('#f_zip').value=c.zip||'';
-      el('#f_city').value=c.city||'';
-      show(el('#modalBackdrop'));
-    }
-    function closeModal(){ hide(el('#modalBackdrop')); }
+// délégation d’événements (corrige “Éditer” qui ne répondait pas)
+el?.('#clients_list')?.addEventListener('click', (e)=>{
+  const id = e.target?.dataset?.id;
+  if(!id) return;
+  if(e.target.classList.contains('js-edit')) openClientEdit(+id);
+  if(e.target.classList.contains('js-del'))  delClient(+id);
+});
 
-    async function saveClient(){
-      if(!requireAuth()) return;
-      const payload = {
-        name: el('#f_name').value.trim(),
-        email: valOrNull('#f_email'),
-        phone: valOrNull('#f_phone'),
-        address: valOrNull('#f_address'),
-        zip: valOrNull('#f_zip'),
-        city: valOrNull('#f_city'),
-      };
-      if(!payload.name){ alert('Le nom est obligatoire'); return; }
+function openClientAdd(){
+  if(!requireAuth())return;
+  state.editingClientId=null;
+  el('#clientTitle').textContent='Nouveau client';
+  ['#c_name','#c_email','#c_phone','#c_address','#c_zip','#c_city'].forEach(s=>el(s).value='');
+  show(el('#modalClient'));
+}
+function openClientEdit(id){
+  if(!requireAuth())return;
+  const c = state.clients.find(x=>x.id===id); if(!c) return;
+  state.editingClientId=id;
+  el('#clientTitle').textContent='Modifier client';
+  el('#c_name').value=c.name||''; el('#c_email').value=c.email||'';
+  el('#c_phone').value=c.phone||''; el('#c_address').value=c.address||'';
+  el('#c_zip').value=c.zip||''; el('#c_city').value=c.city||'';
+  show(el('#modalClient'));
+}
+async function saveClient(){
+  if(!requireAuth())return;
+  const payload = { name:el('#c_name').value.trim(), email:valOrNull('#c_email'), phone:valOrNull('#c_phone'), address:valOrNull('#c_address'), zip:valOrNull('#c_zip'), city:valOrNull('#c_city') };
+  if(!payload.name){ alert('Nom obligatoire'); return; }
+  const isEdit = !!state.editingClientId;
+  const url = isEdit? `${BASE}/clients/${state.editingClientId}` : `${BASE}/clients`;
+  const method = isEdit? 'PUT':'POST';
+  const r = await fetch(url,{ method, headers:{'Content-Type':'application/json',Authorization:'Bearer '+state.token}, body:JSON.stringify(payload) });
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+  hide(el('#modalClient')); await loadClients();
+}
+async function delClient(id){
+  if(!requireAuth())return;
+  if(!confirm('Supprimer ce client ?')) return;
+  const r = await fetch(`${BASE}/clients/${id}`,{ method:'DELETE', headers:{Authorization:'Bearer '+state.token}});
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+  await loadClients();
+}
 
-      const isEdit = !!state.editingId;
-      const url    = isEdit ? `${BASE}/clients/${state.editingId}` : `${BASE}/clients`;
-      const method = isEdit ? 'PUT' : 'POST';
+// ====== INTERVENTIONS ======
+async function loadInterventions(){
+  if(!requireAuth())return;
+  const r = await fetch(`${BASE}/interventions`, { headers:{Authorization:'Bearer '+state.token}});
+  state.interventions = (await r.json())||[];
+  renderInterventions();
+}
+function renderInterventions(){
+  const list = el('#interv_list');
+  if(!state.interventions.length){ list.innerHTML=`<div class="code muted">Aucune intervention.</div>`; return; }
+  let html=`
+  <div class="row header">
+    <div>Client</div><div>Type</div><div>Date</div><div class="hide-sm">Adresse</div><div>Statut</div><div class="hide-sm">Tech</div><div>Actions</div>
+  </div>`;
+  for(const i of state.interventions){
+    html+=`<div class="row" data-id="${i.id}">
+      <div>${esc(i.client_name||i.client_id)}</div>
+      <div>${esc(i.type)}</div>
+      <div>${esc(i.scheduled_at)}</div>
+      <div class="hide-sm">${esc(i.address||'')}</div>
+      <div>${esc(i.status||'PLANIFIÉ')}</div>
+      <div class="hide-sm">${esc(i.tech_name||'')}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-ghost js-iedit" data-id="${i.id}">Éditer</button>
+        <button class="btn-ghost js-isign" data-id="${i.id}">Signature</button>
+        <button class="btn-danger js-idel" data-id="${i.id}">Supprimer</button>
+      </div>
+    </div>`;
+  }
+  list.innerHTML=html;
+}
+el?.('#interv_list')?.addEventListener('click',(e)=>{
+  const id = e.target?.dataset?.id; if(!id) return;
+  if(e.target.classList.contains('js-iedit')) openIntervEdit(+id);
+  if(e.target.classList.contains('js-isign')) openSign(+id);
+  if(e.target.classList.contains('js-idel'))  delInterv(+id);
+});
 
-      const r = await fetch(url, {
-        method, headers:{'Content-Type':'application/json', Authorization:'Bearer '+state.token},
-        body: JSON.stringify(payload)
-      });
-      if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
-      closeModal();
-      await loadClients();
-    }
+function openIntervAdd(){
+  if(!requireAuth())return;
+  state.editingIntervId=null;
+  el('#intervTitle').textContent='Nouvelle intervention';
+  ['#i_client','#i_type','#i_date','#i_address','#i_notes','#i_status'].forEach(s=>el(s).value='');
+  show(el('#modalInterv'));
+}
+function openIntervEdit(id){
+  if(!requireAuth())return;
+  const it = state.interventions.find(x=>x.id===id); if(!it) return;
+  state.editingIntervId=id;
+  el('#intervTitle').textContent='Modifier intervention';
+  el('#i_client').value = it.client_id||it.client||'';
+  el('#i_type').value   = it.type||'';
+  el('#i_date').value   = (it.scheduled_at||'').replace(' ','T').slice(0,16);
+  el('#i_address').value= it.address||'';
+  el('#i_notes').value  = it.notes||'';
+  el('#i_status').value = it.status||'PLANIFIÉ';
+  show(el('#modalInterv'));
+}
+async function saveInterv(){
+  if(!requireAuth())return;
+  const payload = {
+    client_id: valOrNull('#i_client'),
+    type: el('#i_type').value.trim(),
+    scheduled_at: el('#i_date').value, // "YYYY-MM-DDTHH:MM"
+    address: valOrNull('#i_address'),
+    notes: valOrNull('#i_notes'),
+    status: el('#i_status').value
+  };
+  if(!payload.client_id || !payload.type || !payload.scheduled_at){ alert('Client, type et date sont obligatoires.'); return; }
+  const isEdit = !!state.editingIntervId;
+  const url = isEdit? `${BASE}/interventions/${state.editingIntervId}` : `${BASE}/interventions`;
+  const method = isEdit? 'PUT':'POST';
+  const r = await fetch(url,{ method, headers:{'Content-Type':'application/json',Authorization:'Bearer '+state.token}, body:JSON.stringify(payload)});
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+  hide(el('#modalInterv')); await loadInterventions();
+}
+async function delInterv(id){
+  if(!requireAuth())return;
+  if(!confirm('Supprimer cette intervention ?')) return;
+  const r = await fetch(`${BASE}/interventions/${id}`,{ method:'DELETE', headers:{Authorization:'Bearer '+state.token}});
+  if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
+  await loadInterventions();
+}
 
-    async function delClient(id){
-      if(!requireAuth()) return;
-      if(!confirm('Supprimer ce client ?')) return;
-      const r = await fetch(`${BASE}/clients/${id}`, {
-        method:'DELETE', headers:{ Authorization:'Bearer '+state.token }
-      });
-      if(!r.ok){ alert('Erreur API: '+await r.text()); return; }
-      await loadClients();
-    }
+// ====== SIGNATURE ======
+function openSign(id){
+  if(!requireAuth())return;
+  state.sign.id=id;
+  show(el('#modalSign'));
+  initPad();
+}
+function initPad(){
+  const c = el('#signCanvas'); const ctx = c.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+  state.sign.drawing=false;
 
-    // ---- Utils
-    function valOrNull(sel){ const v = el(sel).value.trim(); return v ? v : null; }
-    function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  const pos = (e)=>{ const r=c.getBoundingClientRect(); const t=e.touches?.[0]||e; return {x:(t.clientX-r.left), y:(t.clientY-r.top)}; };
+  const start = e=>{ state.sign.drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault(); };
+  const move  = e=>{ if(!state.sign.drawing) return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.strokeStyle='#111'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.stroke(); e.preventDefault(); };
+  const end   = e=>{ state.sign.drawing=false; e.preventDefault(); };
 
-    // ---- Boot
-    document.addEventListener('DOMContentLoaded', () => {
-      // cacher modale au démarrage
-      hide(el('#modalBackdrop'));
+  c.onmousedown=start; c.onmousemove=move; window.onmouseup=end;
+  c.ontouchstart=start; c.ontouchmove=move; c.ontouchend=end;
+}
+function clearSign(){
+  const c=el('#signCanvas'); const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+}
+async function saveSign(){
+  if(!requireAuth())return;
+  const c=el('#signCanvas'); const dataURL=c.toDataURL('image/png'); // base64
+  const r = await fetch(`${BASE}/interventions/${state.sign.id}/signature`,{
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer '+state.token},
+    body: JSON.stringify({ image:dataURL })
+  });
+  if(!r.ok){ alert('Erreur envoi signature: '+await r.text()); return; }
+  hide(el('#modalSign'));
+  // Option : recharger interventions si l’API renvoie la signature/url
+  await loadInterventions();
+}
 
-      // restaurer session
-      try{
-        state.token = localStorage.getItem('token') || null;
-        state.user  = JSON.parse(localStorage.getItem('user') || 'null');
-      }catch{ state.token=null; state.user=null; }
+// ====== BOOT ======
+document.addEventListener('DOMContentLoaded', ()=>{
+  hide(el('#modalClient')); hide(el('#modalInterv')); hide(el('#modalSign'));
+  // restore session
+  try{ state.token=localStorage.getItem('token')||null; state.user=JSON.parse(localStorage.getItem('user')||'null'); }catch{}
+  if(state.token&&state.user) onLogin(); else showLogin();
 
-      if(state.token && state.user) onLogin();
-      else { hide(el('#nav')); showLogin(); }
+  // login
+  el('#login_form')?.addEventListener('submit',login);
 
-      // actions
-      el('#login_form')?.addEventListener('submit', login);
-      el('#btnAdd')?.addEventListener('click', openAdd);
-      el('#btnSave')?.addEventListener('click', saveClient);
-      el('#btnCancel')?.addEventListener('click', closeModal);
-      el('#logout')?.addEventListener('click', logout);
-      el('#refresh')?.addEventListener('click', loadClients);
-    });
-  </script>
+  // navbar
+  el('#logout')?.addEventListener('click',logout);
+  el('#tabClients')?.addEventListener('click',()=>setTab('clients'));
+  el('#tabInterv')?.addEventListener('click',()=>setTab('interventions'));
+
+  // clients
+  el('#btnAddClient')?.addEventListener('click',openClientAdd);
+  el('#btnSaveClient')?.addEventListener('click',saveClient);
+  el('#btnCancelClient')?.addEventListener('click',()=>hide(el('#modalClient')));
+
+  // interventions
+  el('#btnAddInterv')?.addEventListener('click',openIntervAdd);
+  el('#btnSaveInterv')?.addEventListener('click',saveInterv);
+  el('#btnCancelInterv')?.addEventListener('click',()=>hide(el('#modalInterv')));
+
+  // signature
+  el('#btnSignClear')?.addEventListener('click',clearSign);
+  el('#btnSignSave')?.addEventListener('click',saveSign);
+  el('#btnSignCancel')?.addEventListener('click',()=>hide(el('#modalSign')));
+});
+</script>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Geeks App</h1>
-      <div id="who" class="muted"></div>
-      <nav id="nav" class="hidden">
-        <button id="refresh" title="Rafraîchir">Rafraîchir</button>
-        <button id="btnAdd" class="btn-primary">Ajouter</button>
-        <button id="logout" class="btn-ghost">Déconnexion</button>
-      </nav>
-    </header>
-
-    <!-- Vue Login -->
-    <section id="view-login" class="center">
-      <form id="login_form" class="card" style="width:min(520px,92vw)">
-        <h2 style="margin:4px 0 14px 0">Connexion</h2>
-        <div class="form-row">
-          <label for="login_email">Email</label>
-          <input id="login_email" type="email" placeholder="admin@geeksdupc.fr" autocomplete="username"/>
-        </div>
-        <div class="form-row">
-          <label for="login_pass">Mot de passe</label>
-          <input id="login_pass" type="password" placeholder="••••••••" autocomplete="current-password"/>
-        </div>
-        <div class="actions">
-          <button type="submit" class="btn-primary">Se connecter</button>
-        </div>
-        <pre id="login_result" class="code muted" style="margin-top:12px"></pre>
-      </form>
-    </section>
-
-    <!-- Vue Clients -->
-    <section id="view-clients" class="hidden">
-      <div class="topbar">
-        <div class="muted">Gestion des clients</div>
-        <div class="grow"></div>
-        <button id="refresh">Rafraîchir</button>
-        <button id="btnAdd" class="btn-primary">Ajouter</button>
+<div class="wrap">
+  <header>
+    <h1>Geeks App</h1>
+    <div id="who" class="muted"></div>
+    <div id="navbar" class="navbar hidden">
+      <div class="tabs">
+        <button id="tabClients" class="tab active">Clients</button>
+        <button id="tabInterv" class="tab">Interventions</button>
       </div>
-      <div id="clients_list" class="list"></div>
-    </section>
-  </div>
+      <button id="logout" class="btn-ghost">Déconnexion</button>
+    </div>
+  </header>
 
-  <!-- Modale Ajouter/Éditer -->
-  <div id="modalBackdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeModal()">
-    <div class="modal card">
-      <h3 id="modalTitle" style="margin-top:0;margin-bottom:14px">Nouveau client</h3>
-      <div class="grid">
-        <div class="form-row">
-          <label>Nom *</label>
-          <input id="f_name" placeholder="Nom de la société / client" />
-        </div>
-        <div class="form-row">
-          <label>Email</label>
-          <input id="f_email" type="email" placeholder="contact@exemple.fr"/>
-        </div>
-        <div class="form-row">
-          <label>Téléphone</label>
-          <input id="f_phone" placeholder="06 00 00 00 00"/>
-        </div>
-        <div class="form-row">
-          <label>Adresse</label>
-          <input id="f_address" placeholder="12 rue des Lilas"/>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <div class="form-row">
-            <label>CP</label>
-            <input id="f_zip" placeholder="75002"/>
-          </div>
-          <div class="form-row">
-            <label>Ville</label>
-            <input id="f_city" placeholder="Paris"/>
-          </div>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="btnSave" class="btn-primary">Enregistrer</button>
-        <button id="btnCancel" class="btn-ghost">Annuler</button>
-      </div>
+  <!-- LOGIN -->
+  <section id="view-login" class="center">
+    <form id="login_form" class="card" style="width:min(520px,92vw)">
+      <h2 style="margin:4px 0 14px 0">Connexion</h2>
+      <div class="form-row"><label>Email</label><input id="login_email" type="email" placeholder="admin@geeksdupc.fr"></div>
+      <div class="form-row"><label>Mot de passe</label><input id="login_pass" type="password" placeholder="••••••••"></div>
+      <div class="topbar"><div class="grow"></div><button type="submit" class="btn-primary">Se connecter</button></div>
+      <pre id="login_result" class="code muted" style="margin-top:10px"></pre>
+    </form>
+  </section>
+
+  <!-- CLIENTS -->
+  <section id="view-clients" class="hidden">
+    <div class="topbar">
+      <div class="muted">Gestion des clients</div><div class="grow"></div>
+      <button id="btnAddClient" class="btn-primary">Ajouter</button>
+    </div>
+    <div id="clients_list" class="list"></div>
+  </section>
+
+  <!-- INTERVENTIONS -->
+  <section id="view-interventions" class="hidden">
+    <div class="topbar">
+      <div class="muted">Gestion des interventions</div><div class="grow"></div>
+      <button id="btnAddInterv" class="btn-primary">Ajouter</button>
+    </div>
+    <div id="interv_list" class="list"></div>
+  </section>
+</div>
+
+<!-- MODALE CLIENT -->
+<div id="modalClient" class="modal-backdrop hidden" onclick="if(event.target===this) hide(this)">
+  <div class="modal card">
+    <h3 id="clientTitle" style="margin-top:0">Nouveau client</h3>
+    <div class="form-row"><label>Nom *</label><input id="c_name"></div>
+    <div class="form-row"><label>Email</label><input id="c_email" type="email"></div>
+    <div class="form-row"><label>Téléphone</label><input id="c_phone"></div>
+    <div class="form-row"><label>Adresse</label><input id="c_address"></div>
+    <div class="topbar">
+      <div class="form-row" style="flex:1"><label>CP</label><input id="c_zip"></div>
+      <div class="form-row" style="flex:2"><label>Ville</label><input id="c_city"></div>
+    </div>
+    <div class="topbar"><div class="grow"></div>
+      <button id="btnSaveClient" class="btn-primary">Enregistrer</button>
+      <button id="btnCancelClient" class="btn-ghost">Annuler</button>
     </div>
   </div>
+</div>
+
+<!-- MODALE INTERVENTION -->
+<div id="modalInterv" class="modal-backdrop hidden" onclick="if(event.target===this) hide(this)">
+  <div class="modal card">
+    <h3 id="intervTitle" style="margin-top:0">Nouvelle intervention</h3>
+    <div class="form-row"><label>Client ID *</label><input id="i_client" placeholder="ID client (V1: saisie ID)"></div>
+    <div class="form-row"><label>Type *</label><input id="i_type" placeholder="Dépannage / Atelier / Téléassistance"></div>
+    <div class="form-row"><label>Date & heure *</label><input id="i_date" type="datetime-local"></div>
+    <div class="form-row"><label>Adresse</label><input id="i_address" placeholder="Si différent de l'adresse client"></div>
+    <div class="form-row"><label>Notes</label><textarea id="i_notes" rows="3" placeholder="Détails, matériel, etc."></textarea></div>
+    <div class="form-row"><label>Statut</label>
+      <select id="i_status">
+        <option>PLANIFIÉ</option><option>EN COURS</option><option>TERMINÉ</option><option>ANNULÉ</option>
+      </select>
+    </div>
+    <div class="topbar"><div class="grow"></div>
+      <button id="btnSaveInterv" class="btn-primary">Enregistrer</button>
+      <button id="btnCancelInterv" class="btn-ghost">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE SIGNATURE -->
+<div id="modalSign" class="modal-backdrop hidden" onclick="if(event.target===this) hide(this)">
+  <div class="modal card">
+    <h3 style="margin-top:0">Signature du client</h3>
+    <div class="muted" style="margin-bottom:8px">Signez dans la zone blanche (stylet/doigt).</div>
+    <div style="display:grid;place-items:center">
+      <canvas id="signCanvas" width="640" height="240"></canvas>
+    </div>
+    <div class="topbar"><div class="grow"></div>
+      <button id="btnSignClear" class="btn-ghost">Effacer</button>
+      <button id="btnSignSave" class="btn-primary">Enregistrer la signature</button>
+      <button id="btnSignCancel" class="btn-ghost">Fermer</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
