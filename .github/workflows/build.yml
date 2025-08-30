@@ -14,8 +14,8 @@ concurrency:
 env:
   NODE_VERSION: '20'
   REGISTRY: docker.io
-  DH_NS: ${{ vars.DOCKERHUB_NAMESPACE }}         # <- ton username Docker Hub
-  IMAGE_PREFIX: geeks-app                         # noms: <ns>/geeks-app-{api,web,worker}
+  DH_NS: ${{ secrets.DOCKERHUB_USERNAME }}   # <-- ton username Docker Hub
+  IMAGE_PREFIX: geeks-app                     # images: <ns>/geeks-app-{api,web,worker}
 
 jobs:
   # ---------- WEB (build Vite) ----------
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build (Vite)
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}   # définir dans Repo → Actions → Variables
         run: npm run build
 
       - name: Upload web artifact (dist)
@@ -51,7 +51,9 @@ jobs:
     defaults: { run: { working-directory: api } }
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node (no cache)
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -76,15 +78,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: web-dist
-        # place dans web/dist par défaut (même nom que l'upload)
-        # si besoin: path: web/dist
+          path: web/dist            # place /web/dist pour le Dockerfile web
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ env.DH_NS }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DH_NS }}                # <- prend DOCKERHUB_USERNAME (secret)
+          password: ${{ secrets.DOCKERHUB_TOKEN }}  # <- Access Token Docker Hub
 
       - name: Docker metadata (api)
         id: meta_api
@@ -133,8 +134,7 @@ jobs:
           labels: ${{ steps.meta_api.outputs.labels }}
 
       # --- Build & push WEB image ---
-      # IMPORTANT: Le Dockerfile web ne doit PAS faire "npm ci".
-      # Il doit juste copier le dossier dist (produit par le job web) vers nginx.
+      # Le Dockerfile web doit simplement copier ./dist vers nginx
       - name: Build & push WEB image
         uses: docker/build-push-action@v6
         with:
@@ -153,3 +153,25 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta_worker.outputs.tags }}
           labels: ${{ steps.meta_worker.outputs.labels }}
+
+  # ---------- (Optionnel) Migration DB ----------
+  migrate:
+    if: github.ref == 'refs/heads/main'
+    needs: [docker]
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: api } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm install
+      - name: Run DB migration (api/src/migrate.js)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -f "src/migrate.js" ]; then
+            node src/migrate.js
+          else
+            echo "No migrate.js, skipping"
+          fi
