@@ -1,20 +1,16 @@
 {
-  "name": "geeks-app-api",
-  "version": "1.0.0",
+  "name": "geeks-api",
   "type": "module",
-  "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
-    "migrate": "node src/migrate.js",
-    "seed": "node src/seed.js"
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
   },
   "dependencies": {
-  "cors": "^2.8.5",
-  "express": "^4.19.2",
-  "pg": "^8.11.5",
-  "jsonwebtoken": "^9.0.2",
-  "bcryptjs": "^2.4.3"
-}
-
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0"
+  }
 }
