@@ -1,5 +1,4 @@
 name: build-and-push-dockerhub
-
 on:
   push:
     branches: [ main ]
