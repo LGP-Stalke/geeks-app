@@ -10,32 +10,42 @@ const { Pool } = pkg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, application_name: "geeks-api" });
 
 // force le search_path
-pool.on("connect", client => client.query("SET search_path TO " + (process.env.SEARCH_PATH || "geeks,public")));
+pool.on("connect", client => client.query("SET search_path TO geeks, public"));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---- Auth
+// ---- Auth (vérif du mot de passe dans Postgres)
 app.post("/auth/login", async (req, res) => {
   const { ident, password } = req.body || {};
   if (!ident || !password) return res.status(400).json({ error: "missing_credentials" });
 
+  // Sélecteur email OU username + user actif + vérif bcrypt dans SQL
   const q = `
-    SELECT id, username, email, password_hash, is_active,
+    SELECT u.id, u.username, u.email, u.is_active,
            (SELECT name FROM geeks.roles WHERE id = u.role_id) AS role
     FROM geeks.users u
-    WHERE lower(username)=lower($1) OR lower(email)=lower($1)
-    LIMIT 1`;
-  const { rows } = await pool.query(q, [ident]);
-  const u = rows[0];
-  if (!u || !u.is_active) return res.status(401).json({ error: "bad_credentials" });
+    WHERE (lower(u.username) = lower($1) OR lower(u.email) = lower($1))
+      AND u.is_active = TRUE
+      AND crypt($2, u.password_hash) = u.password_hash
+    LIMIT 1
+  `;
+  try {
+    const { rows } = await pool.query(q, [ident, password]);
+    const u = rows[0];
+    if (!u) return res.status(401).json({ error: "bad_credentials" });
 
-  const ok = await bcrypt.compare(password, u.password_hash);
-  if (!ok) return res.status(401).json({ error: "bad_credentials" });
-
-  const access = jwt.sign({ id: u.id, role: u.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || "3600s" });
-  res.json({ access, user: { id: u.id, role: u.role, username: u.username, email: u.email } });
+    const access = jwt.sign(
+      { id: u.id, role: u.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES || "3600s" }
+    );
+    return res.json({ access, user: { id: u.id, role: u.role, username: u.username, email: u.email } });
+  } catch (e) {
+    console.error("login error:", e);
+    return res.status(500).json({ error: "server_error" });
+  }
 });
 
 // ---- Planning
